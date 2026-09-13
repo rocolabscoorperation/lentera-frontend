@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 interface Props {
   title?: string
@@ -11,19 +11,28 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{ close: [] }>()
+const box = ref<HTMLElement | null>(null)
+let previousFocus: HTMLElement | null = null
 
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') emit('close')
 }
 
 onMounted(() => {
+  previousFocus = document.activeElement as HTMLElement | null
   document.addEventListener('keydown', handleKeydown)
   document.body.style.overflow = 'hidden'
+  nextTick(() => {
+    const target = box.value?.querySelector<HTMLElement>('input, select, textarea')
+      ?? box.value?.querySelector<HTMLElement>('button')
+    target?.focus()
+  })
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
   document.body.style.overflow = ''
+  previousFocus?.focus()
 })
 </script>
 
@@ -36,7 +45,7 @@ onUnmounted(() => {
       :aria-labelledby="props.title ? 'modal-title' : undefined"
       @click.self="emit('close')"
     >
-      <div class="modal-box" :class="`modal-box--${props.size}`">
+      <div ref="box" class="modal-box" :class="`modal-box--${props.size}`">
         <!-- Header -->
         <div v-if="props.title || $slots.header" class="modal-header">
           <slot name="header">
@@ -82,16 +91,10 @@ onUnmounted(() => {
 .modal-box {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   width: 100%;
-  animation: slideUp 0.2s ease;
   max-height: 90dvh;
   overflow-y: auto;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
 }
 
 .modal-box--sm { max-width: 360px; }

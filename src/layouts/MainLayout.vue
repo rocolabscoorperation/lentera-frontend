@@ -6,13 +6,14 @@ import { useAuthStore } from '@/stores/auth'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const isDemo = import.meta.env.DEV && import.meta.env.VITE_USE_MOCK === 'true'
 
 const navItems = [
-  { name: 'Beranda', to: '/', icon: 'home', exact: true },
-  { name: 'Anak', to: '/children', icon: 'users' },
-  { name: 'Asesmen', to: '/assessment', icon: 'clipboard' },
-  { name: 'Riwayat', to: '/results', icon: 'history' },
-  { name: 'Panduan', to: '/panduan', icon: 'book' },
+  { name: 'Beranda', to: '/', icon: '⌂', exact: true },
+  { name: 'Anak', to: '/children', icon: '◇' },
+  { name: 'Asesmen', to: '/assessment', icon: '☷' },
+  { name: 'Riwayat', to: '/results', icon: '▤' },
+  { name: 'Panduan', to: '/panduan', icon: '?' },
 ]
 
 const isActive = (to: string, exact = false) => {
@@ -26,7 +27,7 @@ async function handleLogout() {
 }
 
 const userInitial = computed(() =>
-  auth.user?.phoneNumber?.slice(0, 1).toUpperCase() ?? 'U',
+  auth.user?.phoneNumber?.slice(-2) ?? '—',
 )
 </script>
 
@@ -37,12 +38,12 @@ const userInitial = computed(() =>
       <div class="navbar-inner">
         <!-- Brand -->
         <RouterLink to="/" class="navbar-brand">
-          <span class="navbar-brand-icon">💡</span>
+          <span class="navbar-brand-icon" aria-hidden="true">✳</span>
           <span class="navbar-brand-text">LENTERA</span>
         </RouterLink>
 
         <!-- Desktop nav links -->
-        <nav class="navbar-links" aria-label="Navigasi utama">
+        <nav v-if="auth.isAuthenticated" class="navbar-links" aria-label="Navigasi utama">
           <RouterLink
             v-for="item in navItems"
             :key="item.to"
@@ -53,26 +54,39 @@ const userInitial = computed(() =>
             {{ item.name }}
           </RouterLink>
         </nav>
+        <nav v-else class="navbar-links" aria-label="Navigasi utama">
+          <RouterLink class="navbar-link" to="/panduan">Panduan</RouterLink>
+          <RouterLink class="navbar-link" to="/contact">Kontak</RouterLink>
+        </nav>
 
         <!-- Right side -->
         <div class="navbar-right">
-          <RouterLink to="/profile" class="navbar-avatar" aria-label="Profil saya">
+          <RouterLink v-if="auth.isAuthenticated" to="/profile" class="navbar-avatar" aria-label="Profil saya">
             {{ userInitial }}
           </RouterLink>
-          <button class="navbar-logout" @click="handleLogout" aria-label="Keluar">
+          <button v-if="auth.isAuthenticated" class="navbar-logout" @click="handleLogout" aria-label="Keluar">
             Keluar
           </button>
+          <RouterLink v-if="!auth.isAuthenticated" class="navbar-link" to="/login">Masuk</RouterLink>
+          <RouterLink v-if="!auth.isAuthenticated" class="navbar-register" to="/register">Daftar</RouterLink>
         </div>
       </div>
     </header>
 
     <!-- Page content -->
+    <div v-if="isDemo" class="demo-banner" role="status">Mode pratinjau · Semua data pada mode ini hanya contoh antarmuka, bukan hasil penelitian.</div>
+
     <main class="main-content">
       <slot />
     </main>
 
+    <footer class="site-footer">
+      <span>LENTERA · Prototipe sistem pendukung keputusan</span>
+      <div><RouterLink to="/panduan">Panduan</RouterLink><RouterLink to="/contact">Kontak</RouterLink></div>
+    </footer>
+
     <!-- Mobile bottom navigation -->
-    <nav class="bottom-nav" aria-label="Navigasi bawah">
+    <nav v-if="auth.isAuthenticated" class="bottom-nav" aria-label="Navigasi bawah">
       <RouterLink
         v-for="item in navItems"
         :key="item.to"
@@ -81,15 +95,7 @@ const userInitial = computed(() =>
         :class="{ 'bottom-nav-item--active': isActive(item.to, item.exact) }"
         :aria-current="isActive(item.to, item.exact) ? 'page' : undefined"
       >
-        <span class="bottom-nav-icon" aria-hidden="true">
-          <component :is="'span'" class="icon-placeholder">
-            <template v-if="item.icon === 'home'">🏠</template>
-            <template v-else-if="item.icon === 'users'">👶</template>
-            <template v-else-if="item.icon === 'clipboard'">📋</template>
-            <template v-else-if="item.icon === 'history'">📊</template>
-            <template v-else-if="item.icon === 'book'">📖</template>
-          </template>
-        </span>
+        <span class="bottom-nav-icon" aria-hidden="true">{{ item.icon }}</span>
         <span class="bottom-nav-label">{{ item.name }}</span>
       </RouterLink>
     </nav>
@@ -101,8 +107,9 @@ const userInitial = computed(() =>
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding-bottom: var(--bottom-nav-height);
+  padding-bottom: 0;
 }
+.layout-main:has(.bottom-nav) { padding-bottom: var(--bottom-nav-height); }
 
 /* ── Top navbar ── */
 .navbar {
@@ -133,7 +140,8 @@ const userInitial = computed(() =>
 }
 
 .navbar-brand-icon {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
+  color: var(--color-primary);
 }
 
 .navbar-brand-text {
@@ -172,7 +180,7 @@ const userInitial = computed(() =>
 }
 
 .navbar-right {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-left: auto;
@@ -182,8 +190,8 @@ const userInitial = computed(() =>
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-surface-2);
+  color: var(--color-text);
   font-weight: 700;
   font-size: 0.875rem;
   display: flex;
@@ -208,12 +216,45 @@ const userInitial = computed(() =>
   border-color: var(--color-danger);
   color: var(--color-danger);
 }
+.navbar-register {
+  color: #fff;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.8rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.navbar-register:hover { background: var(--color-primary-hover); text-decoration: none; }
+.demo-banner {
+  padding: 0.5rem 1rem;
+  text-align: center;
+  color: #713f12;
+  background: #fffbeb;
+  border-bottom: 1px solid #fde68a;
+  font-size: 0.8125rem;
+}
 
 /* ── Main content ── */
 .main-content {
   flex: 1;
   width: 100%;
 }
+.site-footer {
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.site-footer div { display: flex; gap: 1rem; }
+.site-footer a { color: var(--color-text-2); }
 
 /* ── Bottom nav (mobile only) ── */
 .bottom-nav {
@@ -247,7 +288,7 @@ const userInitial = computed(() =>
 }
 
 .bottom-nav-icon {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   line-height: 1;
 }
 

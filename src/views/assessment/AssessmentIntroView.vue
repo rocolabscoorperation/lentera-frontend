@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import AssessmentQuestion from '@/components/assessment/AssessmentQuestion.vue'
 import AnswerScale from '@/components/assessment/AnswerScale.vue'
 import AssessmentProgress from '@/components/assessment/AssessmentProgress.vue'
@@ -10,6 +10,8 @@ import BaseAlert from '@/components/ui/BaseAlert.vue'
 import LoadingState from '@/components/ui/LoadingState.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
 import { useAssessmentStore } from '@/stores/assessment'
+import { getChild } from '@/services/children'
+import { formatDateTime } from '@/utils/date'
 import type { ApiError } from '@/types/api'
 
 const route = useRoute()
@@ -22,11 +24,30 @@ const assessmentId = computed(() => route.params.id as string)
 const phase = ref<'intro' | 'questions' | 'review' | 'submitting'>('intro')
 const submitError = ref<string | null>(null)
 
+onBeforeRouteLeave(() => {
+  if ((phase.value === 'questions' || phase.value === 'review') && assessmentStore.answeredCount > 0) {
+    return window.confirm('Jawaban yang belum dikirim akan hilang. Tinggalkan asesmen?')
+  }
+})
+
+function warnBeforeUnload(event: BeforeUnloadEvent) {
+  if ((phase.value === 'questions' || phase.value === 'review') && assessmentStore.answeredCount > 0) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+}
+window.addEventListener('beforeunload', warnBeforeUnload)
+onUnmounted(() => window.removeEventListener('beforeunload', warnBeforeUnload))
+
 onMounted(async () => {
   try {
+    const childId = route.query.childId
+    if (typeof childId === 'string' && String(assessmentStore.selectedChild?.id) !== childId) {
+      assessmentStore.setSelectedChild(await getChild(childId))
+    }
     await assessmentStore.loadAssessment(assessmentId.value)
-  } catch {
-    // error already in store
+  } catch (e) {
+    submitError.value = (e as ApiError).message ?? 'Gagal memuat data anak.'
   }
 })
 
@@ -41,8 +62,8 @@ async function handleStart() {
   } catch (e) {
     // cooldown check
     const err = e as ApiError
-    if (err.status === 429 && err.code) {
-      assessmentStore.setCooldown(err.code)
+    if (err.status === 429 && err.cooldownUntil) {
+      assessmentStore.setCooldown(err.cooldownUntil)
     }
   }
 }
@@ -75,8 +96,9 @@ async function handleSubmit() {
   phase.value = 'submitting'
   submitError.value = null
   try {
-    await assessmentStore.submitAssessment()
-    router.push('/results')
+    const response = await assessmentStore.submitAssessment()
+    phase.value = 'submitting'
+    router.replace(response.resultId != null ? `/results/${response.resultId}` : '/results')
   } catch (e) {
     submitError.value = (e as ApiError).message ?? 'Gagal mengirim asesmen.'
     phase.value = 'review'
@@ -90,26 +112,26 @@ async function handleSubmit() {
     <LoadingState v-if="assessmentStore.isLoading" message="Memuat asesmen..." />
 
     <!-- Error -->
+    <!-- Cooldown -->
+    <div v-else-if="assessmentStore.isOnCooldown" class="cooldown-block">
+      <h2 class="cooldown-title">Asesmen Belum Tersedia</h2>
+      <p class="cooldown-desc">Anda belum dapat melakukan asesmen berikutnya.</p>
+      <p v-if="assessmentStore.cooldownUntil" class="cooldown-date">
+        Anda dapat mencoba kembali pada:<br />
+        <strong>{{ formatDateTime(assessmentStore.cooldownUntil) }}</strong>
+      </p>
+    </div>
+
     <ErrorState
       v-else-if="assessmentStore.error && phase === 'intro'"
       :message="assessmentStore.error.message"
       @retry="assessmentStore.loadAssessment(assessmentId)"
     />
 
-    <!-- Cooldown -->
-    <div v-else-if="assessmentStore.isOnCooldown" class="cooldown-block">
-      <div class="cooldown-icon">⏳</div>
-      <h2 class="cooldown-title">Asesmen Belum Tersedia</h2>
-      <p class="cooldown-desc">Anda belum dapat melakukan asesmen berikutnya.</p>
-      <p v-if="assessmentStore.cooldownUntil" class="cooldown-date">
-        Anda dapat mencoba kembali pada:<br />
-        <strong>{{ assessmentStore.cooldownUntil }}</strong>
-      </p>
-    </div>
+    <ErrorState v-else-if="submitError && !assessmentStore.template" :message="submitError" />
 
     <!-- Intro phase -->
     <div v-else-if="phase === 'intro' && assessmentStore.template" class="intro-block">
-      <div class="intro-icon" aria-hidden="true">📋</div>
       <h1 class="intro-title">{{ assessmentStore.template.name }}</h1>
       <p v-if="assessmentStore.template.description" class="intro-desc">
         {{ assessmentStore.template.description }}
@@ -131,9 +153,12 @@ async function handleSubmit() {
         <p>Hasil asesmen diproses oleh sistem dan tidak menggantikan penilaian profesional.</p>
       </div>
 
+      <BaseAlert v-if="submitError" variant="danger">{{ submitError }}</BaseAlert>
+
       <button
+        type="button"
         class="intro-start-btn"
-        :disabled="!assessmentStore.selectedChild"
+        :disabled="!assessmentStore.selectedChild || assessmentStore.questions.length === 0"
         @click="handleStart"
       >
         Mulai Asesmen

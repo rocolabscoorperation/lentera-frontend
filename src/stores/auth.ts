@@ -2,6 +2,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User, LoginRequest, RegisterRequest } from '@/types/auth'
 import * as authService from '@/services/auth'
+import { useParentStore } from '@/stores/parent'
+import { useChildrenStore } from '@/stores/children'
+import { useAssessmentStore } from '@/stores/assessment'
 
 export const useAuthStore = defineStore('auth', () => {
   // ── State ──────────────────────────────────────────────────────────────────
@@ -13,21 +16,20 @@ export const useAuthStore = defineStore('auth', () => {
   // ── Getters ────────────────────────────────────────────────────────────────
   const isAuthenticated = computed(() => !!user.value)
 
+  window.addEventListener('lentera:unauthorized', clearAuth)
+
   // ── Actions ────────────────────────────────────────────────────────────────
 
   /**
    * Called once on app bootstrap.
-   * Tries to restore the session via GET /auth/me without blocking navigation.
+   * Restore either a cookie session or a bearer-token session.
    */
   async function initialize(): Promise<void> {
     if (isInitialized.value) return
-    if (token.value) {
-      try {
-        user.value = await authService.getMe()
-      } catch {
-        // Token is stale — clear it silently
-        clearAuth()
-      }
+    try {
+      user.value = await authService.getMe()
+    } catch {
+      clearAuth()
     }
     isInitialized.value = true
   }
@@ -36,25 +38,34 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await authService.login(payload)
-      user.value = response.user
       if (response.token) {
         token.value = response.token
         localStorage.setItem('lentera_token', response.token)
       }
+      user.value = response.user ?? await authService.getMe()
     } finally {
       isLoading.value = false
     }
   }
 
-  async function register(payload: RegisterRequest): Promise<void> {
+  async function register(payload: RegisterRequest): Promise<boolean> {
     isLoading.value = true
     try {
       const response = await authService.register(payload)
-      user.value = response.user
       if (response.token) {
         token.value = response.token
         localStorage.setItem('lentera_token', response.token)
       }
+      if (response.user) {
+        user.value = response.user
+      } else {
+        try {
+          user.value = await authService.getMe()
+        } catch {
+          return false
+        }
+      }
+      return true
     } finally {
       isLoading.value = false
     }
@@ -74,6 +85,9 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     token.value = null
     localStorage.removeItem('lentera_token')
+    useParentStore().reset()
+    useChildrenStore().reset()
+    useAssessmentStore().reset()
   }
 
   return {

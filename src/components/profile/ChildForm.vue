@@ -69,6 +69,10 @@ function validate(): boolean {
     errors.value.birthDate = 'Tanggal lahir wajib diisi'
     valid = false
   }
+  else if (form.value.birthDate > todayInputDate()) {
+    errors.value.birthDate = 'Tanggal lahir tidak boleh di masa depan'
+    valid = false
+  }
   if (!form.value.gender) {
     errors.value.gender = 'Jenis kelamin wajib dipilih'
     valid = false

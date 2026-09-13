@@ -46,7 +46,7 @@ function startAssessment(templateId: string | number) {
     error.value = 'Pilih anak terlebih dahulu.'
     return
   }
-  router.push(`/assessment/${templateId}`)
+  router.push({ path: `/assessment/${templateId}`, query: { childId: String(assessmentStore.selectedChild.id) } })
 }
 </script>
 

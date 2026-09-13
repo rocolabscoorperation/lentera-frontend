@@ -35,7 +35,11 @@ const form = ref({
   birthDate: '',
   gender: '' as Gender | '',
   address: '',
+  latitude: null as number | null,
+  longitude: null as number | null,
 })
+const locationStatus = ref<string | null>(null)
+const locating = ref(false)
 
 const errors = ref({ name: '', birthDate: '', gender: '' })
 
@@ -47,6 +51,8 @@ watch(
       form.value.birthDate = p.birthDate?.slice(0, 10) ?? ''
       form.value.gender = (p.gender ?? '') as Gender | ''
       form.value.address = p.address ?? ''
+      form.value.latitude = p.latitude ?? null
+      form.value.longitude = p.longitude ?? null
     }
   },
   { immediate: true },
@@ -63,6 +69,7 @@ function validate(): boolean {
 
   if (!form.value.name.trim()) { errors.value.name = 'Nama wajib diisi'; valid = false }
   if (!form.value.birthDate)   { errors.value.birthDate = 'Tanggal lahir wajib diisi'; valid = false }
+  else if (form.value.birthDate > todayInputDate()) { errors.value.birthDate = 'Tanggal lahir tidak boleh di masa depan'; valid = false }
   if (!form.value.gender)      { errors.value.gender = 'Jenis kelamin wajib dipilih'; valid = false }
 
   return valid
@@ -75,7 +82,31 @@ function handleSubmit() {
     birthDate: form.value.birthDate,
     gender: form.value.gender as Gender,
     address: form.value.address.trim() || undefined,
+    latitude: form.value.latitude ?? undefined,
+    longitude: form.value.longitude ?? undefined,
   })
+}
+
+function requestLocation() {
+  if (!navigator.geolocation) {
+    locationStatus.value = 'Perangkat ini tidak mendukung lokasi. Alamat tetap dapat diisi manual.'
+    return
+  }
+  locating.value = true
+  locationStatus.value = null
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      form.value.latitude = position.coords.latitude
+      form.value.longitude = position.coords.longitude
+      locationStatus.value = 'Lokasi berhasil ditambahkan. Simpan profil untuk mengirimkannya.'
+      locating.value = false
+    },
+    () => {
+      locationStatus.value = 'Lokasi tidak dapat diakses. Anda tetap dapat mengisi alamat secara manual.'
+      locating.value = false
+    },
+    { enableHighAccuracy: false, timeout: 10000 },
+  )
 }
 </script>
 
@@ -123,6 +154,15 @@ function handleSubmit() {
         label="Alamat"
         placeholder="Masukkan alamat (opsional)"
       />
+
+      <div class="location-field">
+        <p class="form-label">Lokasi (opsional)</p>
+        <p class="form-hint-text">Jika Anda memilih menggunakan lokasi perangkat, koordinat akan dikirim saat profil disimpan.</p>
+        <BaseButton type="button" variant="secondary" :loading="locating" @click="requestLocation">
+          Gunakan lokasi saya
+        </BaseButton>
+        <p v-if="locationStatus" class="form-hint-text" role="status">{{ locationStatus }}</p>
+      </div>
 
       <div class="parent-form-actions">
         <BaseButton type="submit" variant="primary" full :loading="props.isLoading">
@@ -181,4 +221,6 @@ function handleSubmit() {
   color: var(--color-muted);
   margin: 0;
 }
+.location-field { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+.location-field p { margin: 0; }
 </style>

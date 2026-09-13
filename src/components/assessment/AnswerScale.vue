@@ -18,8 +18,8 @@ const scaleValues = [1, 2, 3, 4, 5]
 </script>
 
 <template>
-  <fieldset class="answer-scale">
-    <legend class="visually-hidden">Pilih jawaban</legend>
+  <fieldset class="answer-scale" :aria-labelledby="`assessment-question-${props.questionId}`">
+    <legend class="visually-hidden">Pilih jawaban angka 1 sampai 5</legend>
     <div class="scale-options">
       <label
         v-for="val in scaleValues"
@@ -35,13 +35,10 @@ const scaleValues = [1, 2, 3, 4, 5]
           class="scale-radio"
           @change="emit('update:modelValue', val)"
         />
-        <span class="scale-value" aria-hidden="true">{{ val }}</span>
+        <span class="scale-value">{{ val }}</span>
       </label>
     </div>
-    <div class="scale-labels" aria-hidden="true">
-      <span class="scale-label-start">Tidak pernah</span>
-      <span class="scale-label-end">Selalu</span>
-    </div>
+    <p class="scale-hint">Makna setiap angka mengikuti petunjuk asesmen yang diberikan penyelenggara.</p>
   </fieldset>
 </template>
 
@@ -54,7 +51,7 @@ const scaleValues = [1, 2, 3, 4, 5]
 
 .scale-options {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -77,8 +74,8 @@ const scaleValues = [1, 2, 3, 4, 5]
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 48px;
   border-radius: var(--radius-md);
   border: 2px solid var(--color-border);
   font-size: 1.25rem;
@@ -107,20 +104,15 @@ const scaleValues = [1, 2, 3, 4, 5]
   outline-offset: 2px;
 }
 
-.scale-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.625rem;
-  padding: 0 4px;
-}
-
-.scale-label-start,
-.scale-label-end {
+.scale-hint {
   font-size: 0.8125rem;
   color: var(--color-muted);
+  text-align: center;
+  margin: 0.75rem 0 0;
 }
 
 @media (min-width: 480px) {
+  .scale-options { gap: 0.75rem; }
   .scale-value {
     width: 64px;
     height: 64px;

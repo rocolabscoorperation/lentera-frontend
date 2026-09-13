@@ -42,18 +42,16 @@ defineProps<Props>()
 }
 
 .result-placement {
-  text-align: center;
+  text-align: left;
   padding: 1.5rem;
   background: var(--color-primary-light);
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 }
 
 .result-placement-label {
   font-size: 0.875rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--color-primary);
   margin: 0 0 0.5rem;
 }

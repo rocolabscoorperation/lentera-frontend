@@ -11,6 +11,7 @@ interface Props {
   required?: boolean
   disabled?: boolean
   autocomplete?: string
+  max?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -40,6 +41,7 @@ const id = useId()
       :required="props.required"
       :disabled="props.disabled"
       :autocomplete="props.autocomplete"
+      :max="props.max"
       class="form-input"
       :class="{ 'form-input--error': props.error }"
       :aria-describedby="props.error ? `${id}-error` : props.hint ? `${id}-hint` : undefined"

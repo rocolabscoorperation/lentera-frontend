@@ -6,7 +6,7 @@ import BaseCard from '@/components/ui/BaseCard.vue'
   <div class="page-container">
     <div class="page-header">
       <h1 class="page-title">Panduan Penggunaan LENTERA</h1>
-      <p class="page-subtitle">Pahami cara kerja sistem untuk mendapatkan hasil maksimal.</p>
+      <p class="page-subtitle">Langkah menggunakan LENTERA dan cara membaca hasilnya.</p>
     </div>
 
     <div class="guide-content">
@@ -14,39 +14,47 @@ import BaseCard from '@/components/ui/BaseCard.vue'
         <h2>1. Apa itu LENTERA?</h2>
         <p>
           LENTERA adalah aplikasi Sistem Pendukung Keputusan (SPK) yang dirancang untuk membantu orang tua
-          dan wali dalam menentukan jalur pendidikan yang paling sesuai (Sekolah Luar Biasa atau Sekolah Inklusi)
-          bagi anak berkebutuhan khusus.
+          dan wali sebagai bahan pertimbangan jalur pendidikan anak antara Sekolah Luar Biasa dan Sekolah Inklusi.
         </p>
       </BaseCard>
 
       <BaseCard padding="lg" class="guide-section">
-        <h2>2. Persiapan Asesmen</h2>
+        <h2>2. Siapa yang dapat menggunakan?</h2>
+        <p>Orang tua atau wali yang ingin memahami pilihan pendidikan anak dan berdiskusi lebih lanjut dengan pihak yang berwenang.</p>
+      </BaseCard>
+
+      <BaseCard padding="lg" class="guide-section">
+        <h2>3. Persiapan dan proses asesmen</h2>
         <ul>
-          <li>Pastikan Anda telah <strong>mendaftarkan akun</strong> dan <strong>melengkapi profil</strong>.</li>
-          <li>Tambahkan data anak Anda melalui menu <strong>Data Anak</strong>.</li>
-          <li>Sediakan waktu sekitar 10-15 menit dalam kondisi tenang.</li>
+          <li>Buat akun, lengkapi profil, lalu tambahkan data anak.</li>
+          <li>Pilih anak dan asesmen yang tersedia.</li>
+          <li>Jawab setiap pertanyaan sesuai pengamatan Anda. Jawaban dapat ditinjau sebelum dikirim.</li>
         </ul>
       </BaseCard>
 
       <BaseCard padding="lg" class="guide-section">
-        <h2>3. Proses Asesmen</h2>
-        <p>
-          Asesmen terdiri dari serangkaian pertanyaan mengenai kondisi, kebiasaan, dan respons anak Anda sehari-hari.
-        </p>
-        <ul>
-          <li>Jawab setiap pertanyaan sejujur mungkin.</li>
-          <li>Gunakan skala 1 (Tidak pernah) hingga 5 (Selalu).</li>
-          <li>Anda dapat kembali ke pertanyaan sebelumnya jika ingin mengubah jawaban.</li>
-        </ul>
+        <h2>4. Cara menjawab skala 1–5</h2>
+        <p>Pilih satu angka untuk setiap pertanyaan. Arti masing-masing angka harus mengikuti petunjuk pada asesmen resmi; angka tidak ditafsirkan sendiri oleh halaman ini.</p>
       </BaseCard>
 
       <BaseCard padding="lg" class="guide-section">
-        <h2>4. Memahami Hasil</h2>
-        <p>Setelah selesai, sistem akan menampilkan rekomendasi jalur pendidikan beserta penjelasan ringkas.</p>
-        <p>
-          <strong>PENTING:</strong> Hasil dari sistem ini hanyalah sebuah panduan awal dan
-          tidak dapat menggantikan asesmen atau diagnosis dari profesional (psikolog/dokter anak).
-        </p>
+        <h2>5. Setelah jawaban dikirim</h2>
+        <p>Jawaban diproses oleh backend. Jika hasil sudah tersedia, Anda dapat melihat jalur pendidikan, interpretasi, serta penjelasan yang diberikan sistem.</p>
+      </BaseCard>
+
+      <BaseCard padding="lg" class="guide-section">
+        <h2>6. Memahami hasil DSS</h2>
+        <p>Skor dan klasifikasi, bila tersedia, berasal dari perhitungan backend. Hasil adalah bahan pertimbangan, bukan keputusan yang harus diikuti tanpa diskusi lebih lanjut.</p>
+      </BaseCard>
+
+      <BaseCard padding="lg" class="guide-section">
+        <h2>7. Rekomendasi sekolah</h2>
+        <p>Daftar sekolah, urutan, dan alasan rekomendasi diberikan oleh backend bila tersedia. Hubungi sekolah untuk memeriksa layanan dan penerimaan terkini.</p>
+      </BaseCard>
+
+      <BaseCard padding="lg" class="guide-section">
+        <h2>8. Batasan penggunaan</h2>
+        <p><strong>LENTERA adalah prototipe sistem pendukung keputusan, bukan alat diagnosis.</strong> Hasil tidak menggantikan penilaian profesional atau keputusan keluarga dan sekolah.</p>
       </BaseCard>
     </div>
   </div>
@@ -58,7 +66,7 @@ import BaseCard from '@/components/ui/BaseCard.vue'
 .page-title { font-size: 1.75rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.5rem; }
 .page-subtitle { font-size: 1rem; color: var(--color-muted); margin: 0; }
 
-.guide-content { display: flex; flex-direction: column; gap: 1.5rem; }
+.guide-content { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .guide-section h2 {
   font-size: 1.125rem;

@@ -7,7 +7,7 @@ import type { LoginRequest, RegisterRequest, AuthResponse, User } from '@/types/
  */
 export async function register(payload: RegisterRequest): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>('/auth/register', payload)
-  return data
+  return data ?? {}
 }
 
 /**
@@ -16,7 +16,7 @@ export async function register(payload: RegisterRequest): Promise<AuthResponse> 
  */
 export async function login(payload: LoginRequest): Promise<AuthResponse> {
   const { data } = await api.post<AuthResponse>('/auth/login', payload)
-  return data
+  return data ?? {}
 }
 
 /**

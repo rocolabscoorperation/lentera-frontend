@@ -102,14 +102,15 @@ export const useAssessmentStore = defineStore('assessment', () => {
     navigateTo(currentIndex.value - 1)
   }
 
-  async function submitAssessment(): Promise<void> {
+  async function submitAssessment(): Promise<assessmentService.SubmitAttemptResponse> {
     if (!attempt.value) throw new Error('Tidak ada asesmen aktif')
+    if (!allAnswered.value || questions.value.length === 0) throw new Error('Lengkapi semua jawaban')
     isSubmitting.value = true
     error.value = null
     try {
       const answersArray = Array.from(answers.value.values())
       await assessmentService.submitAnswers(attempt.value.id, { answers: answersArray })
-      await assessmentService.submitAttempt(attempt.value.id)
+      return await assessmentService.submitAttempt(attempt.value.id)
     } catch (e) {
       error.value = e as ApiError
       throw e

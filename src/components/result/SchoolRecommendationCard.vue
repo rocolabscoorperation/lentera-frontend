@@ -30,9 +30,9 @@ defineProps<Props>()
 
       <!-- Location -->
       <p v-if="recommendation.school.address || recommendation.school.city" class="school-location">
-        📍
+        <strong>Alamat:</strong>
         <span v-if="recommendation.school.address">{{ recommendation.school.address }}</span>
-        <span v-if="recommendation.school.city">, {{ recommendation.school.city }}</span>
+        <span v-if="recommendation.school.city">{{ recommendation.school.address ? ', ' : '' }}{{ recommendation.school.city }}</span>
       </p>
 
       <!-- Description -->

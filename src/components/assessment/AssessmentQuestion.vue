@@ -21,7 +21,7 @@ defineProps<Props>()
     >
       {{ question.category }}
     </p>
-    <h2 class="question-text">
+    <h2 :id="`assessment-question-${question.id}`" class="question-text">
       {{ question.questionText ?? '—' }}
     </h2>
   </div>
@@ -50,7 +50,7 @@ defineProps<Props>()
 }
 
 .question-text {
-  font-size: clamp(1.125rem, 4vw, 1.375rem);
+  font-size: clamp(1.25rem, 4vw, 1.5rem);
   font-weight: 600;
   color: var(--color-text);
   line-height: 1.45;

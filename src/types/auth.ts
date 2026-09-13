@@ -21,6 +21,6 @@ export interface RegisterRequest {
 
 /** Shape of the Go API auth response. Adjust when Go structs are finalised. */
 export interface AuthResponse {
-  user: User
+  user?: User
   token?: string // JWT or session token, may vary
 }

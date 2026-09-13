@@ -8,6 +8,7 @@ export const useParentStore = defineStore('parent', () => {
   // ── State ──────────────────────────────────────────────────────────────────
   const profile = ref<ParentProfile | null>(null)
   const isLoading = ref(false)
+  const hasLoaded = ref(false)
   const error = ref<ApiError | null>(null)
 
   // ── Actions ────────────────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ export const useParentStore = defineStore('parent', () => {
     try {
       const response = await parentService.getParentProfile()
       profile.value = response.profile
+      hasLoaded.value = true
     } catch (e) {
       error.value = e as ApiError
     } finally {
@@ -40,8 +42,9 @@ export const useParentStore = defineStore('parent', () => {
 
   function reset(): void {
     profile.value = null
+    hasLoaded.value = false
     error.value = null
   }
 
-  return { profile, isLoading, error, fetchProfile, updateProfile, reset }
+  return { profile, isLoading, hasLoaded, error, fetchProfile, updateProfile, reset }
 })

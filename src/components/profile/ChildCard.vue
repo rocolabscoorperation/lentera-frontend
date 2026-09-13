@@ -41,7 +41,7 @@ const age = () => {
   >
     <!-- Avatar -->
     <div class="child-avatar" aria-hidden="true">
-      {{ child.gender === 'Perempuan' ? '👧' : '👦' }}
+      {{ child.name?.trim().charAt(0).toUpperCase() || 'A' }}
     </div>
 
     <div class="child-info">
@@ -55,7 +55,7 @@ const age = () => {
       </div>
     </div>
 
-    <div class="child-actions" @click.stop>
+    <div v-if="!props.selectable" class="child-actions" @click.stop>
       <BaseButton variant="ghost" size="sm" @click="emit('edit', child)">
         Edit
       </BaseButton>

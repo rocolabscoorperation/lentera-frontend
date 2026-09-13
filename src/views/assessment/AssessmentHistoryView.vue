@@ -59,6 +59,7 @@ onMounted(fetchHistory)
         role="button"
         tabindex="0"
         @keydown.enter="router.push(`/results/${result.id}`)"
+        @keydown.space.prevent="router.push(`/results/${result.id}`)"
       >
         <div class="history-card-row">
           <div class="history-meta">

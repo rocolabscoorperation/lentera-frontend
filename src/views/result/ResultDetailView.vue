@@ -10,7 +10,9 @@ import LoadingState from '@/components/ui/LoadingState.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
 import EmptyState from '@/components/ui/EmptyState.vue'
 import * as resultsService from '@/services/results'
+import * as schoolsService from '@/services/schools'
 import type { AssessmentResultDetail } from '@/types/result'
+import type { SchoolRecommendationDetail } from '@/types/school'
 import type { ApiError } from '@/types/api'
 import { formatDateTime } from '@/utils/date'
 
@@ -23,12 +25,32 @@ const isLoading = ref(false)
 const error = ref<string | null>(null)
 const isPdfDownloading = ref(false)
 const pdfError = ref<string | null>(null)
+const recommendations = ref<SchoolRecommendationDetail[]>([])
+const recommendationError = ref<string | null>(null)
+const recommendationsLoading = ref(false)
+
+async function fetchRecommendations() {
+  recommendationsLoading.value = true
+  recommendationError.value = null
+  try {
+    recommendations.value = await schoolsService.getSchoolRecommendations(resultId.value)
+  } catch (e) {
+    recommendationError.value = (e as ApiError).message
+  } finally {
+    recommendationsLoading.value = false
+  }
+}
 
 async function fetchResult() {
   isLoading.value = true
   error.value = null
   try {
     result.value = await resultsService.getResult(resultId.value)
+    if (result.value.recommendedSchools) {
+      recommendations.value = result.value.recommendedSchools
+    } else {
+      await fetchRecommendations()
+    }
   } catch (e) {
     error.value = (e as ApiError).message
   } finally {
@@ -46,7 +68,7 @@ async function downloadPdf() {
     a.href = url
     a.download = `hasil-asesmen-${resultId.value}.pdf`
     a.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
   } catch {
     pdfError.value = 'Gagal mengunduh PDF. Silakan coba lagi.'
   } finally {
@@ -87,15 +109,22 @@ onMounted(fetchResult)
       </section>
 
       <!-- School recommendations -->
-      <section class="result-section" v-if="result.recommendedSchools && result.recommendedSchools.length > 0">
+      <section class="result-section">
         <h2 class="section-title">Rekomendasi Sekolah</h2>
-        <div class="schools-list">
+        <LoadingState v-if="recommendationsLoading" message="Memuat rekomendasi sekolah..." />
+        <ErrorState v-else-if="recommendationError" :message="recommendationError" @retry="fetchRecommendations" />
+        <div v-else-if="recommendations.length > 0" class="schools-list">
           <SchoolRecommendationCard
-            v-for="rec in result.recommendedSchools"
+            v-for="rec in recommendations"
             :key="rec.id"
             :recommendation="rec"
           />
         </div>
+        <EmptyState
+          v-else
+          title="Rekomendasi sekolah belum tersedia"
+          message="Belum ada rekomendasi sekolah untuk hasil asesmen ini."
+        />
         <BaseButton
           variant="secondary"
           size="sm"
@@ -105,11 +134,6 @@ onMounted(fetchResult)
           Lihat Semua Rekomendasi
         </BaseButton>
       </section>
-      <EmptyState
-        v-else
-        title="Rekomendasi sekolah belum tersedia"
-        message="Rekomendasi sekolah akan muncul setelah hasil diproses sepenuhnya."
-      />
 
       <!-- PDF download -->
       <section class="result-section">
@@ -121,7 +145,7 @@ onMounted(fetchResult)
           :loading="isPdfDownloading"
           @click="downloadPdf"
         >
-          📄 Unduh Hasil sebagai PDF
+          Unduh Hasil sebagai PDF
         </BaseButton>
       </section>
     </template>

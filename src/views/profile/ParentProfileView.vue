@@ -36,15 +36,18 @@ async function handleSubmit(data: UpdateParentProfileRequest) {
       <p class="page-subtitle">Kelola informasi akun dan data pribadi Anda.</p>
     </div>
 
-    <LoadingState v-if="parentStore.isLoading && !parentStore.profile" />
+    <LoadingState v-if="parentStore.isLoading && !parentStore.hasLoaded" />
 
     <ErrorState
-      v-else-if="parentStore.error && !parentStore.profile"
+      v-else-if="parentStore.error && !parentStore.hasLoaded"
       :message="parentStore.error.message"
       @retry="parentStore.fetchProfile()"
     />
 
     <div v-else class="page-card">
+      <BaseAlert v-if="parentStore.error" variant="danger">
+        {{ parentStore.error.message }}
+      </BaseAlert>
       <BaseAlert v-if="successMessage" variant="success" dismissible @dismiss="successMessage = null">
         {{ successMessage }}
       </BaseAlert>

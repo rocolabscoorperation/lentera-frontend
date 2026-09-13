@@ -5,6 +5,11 @@ import type {
   AssessmentAttempt,
   SubmitAssessmentAnswersRequest,
 } from '@/types/assessment'
+import type { EntityId } from '@/types/common'
+
+export interface SubmitAttemptResponse {
+  resultId?: EntityId
+}
 
 /**
  * GET /assessments
@@ -68,6 +73,7 @@ export async function submitAnswers(
  * POST /assessments/attempt/:id/submit
  * Finalise an attempt and trigger backend DSS processing.
  */
-export async function submitAttempt(attemptId: string | number): Promise<void> {
-  await api.post(`/assessments/attempt/${attemptId}/submit`)
+export async function submitAttempt(attemptId: EntityId): Promise<SubmitAttemptResponse> {
+  const { data } = await api.post<SubmitAttemptResponse>(`/assessments/attempt/${attemptId}/submit`)
+  return data ?? {}
 }

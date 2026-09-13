@@ -6,11 +6,12 @@ import type { ApiError } from '@/types/api'
  * Components MUST NOT call axios directly — use domain services instead.
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL as string || '/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true, // send cookies if backend uses cookie-based sessions
+  timeout: 15000,
 })
 
 // ── Request interceptor: attach Bearer token if stored ──────────────────────
@@ -28,13 +29,10 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     const apiError = normaliseError(error)
 
-    // 401 — clear stale auth and redirect to login
+    // Let the auth store and router react without replacing the current URL.
     if (apiError.status === 401) {
       localStorage.removeItem('lentera_token')
-      // Avoid circular dependency with router — use location directly
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
+      window.dispatchEvent(new Event('lentera:unauthorized'))
     }
 
     return Promise.reject(apiError)
@@ -50,19 +48,21 @@ function normaliseError(error: AxiosError): ApiError {
     const status = error.response.status
     const data = error.response.data as Record<string, unknown> | undefined
 
-    // Try to extract field-level errors for 422
+    // Only expose structured validation messages, never an arbitrary server body.
     const fieldErrors =
-      data && typeof data.errors === 'object' && data.errors !== null
-        ? (data.errors as Record<string, string>)
+      status === 422 && data && typeof data.errors === 'object' && data.errors !== null
+        ? Object.fromEntries(Object.entries(data.errors).filter((entry): entry is [string, string] =>
+            typeof entry[1] === 'string'))
         : undefined
-
-    // Use backend message if available, else provide a sensible Indonesian default
-    const message =
-      (data?.message as string) ||
-      (data?.error as string) ||
-      defaultMessage(status)
-
-    return { status, message, fieldErrors }
+    const cooldownUntil = status === 429 && typeof data?.cooldownUntil === 'string'
+      ? data.cooldownUntil : undefined
+    return {
+      status,
+      message: defaultMessage(status),
+      fieldErrors,
+      code: typeof data?.code === 'string' ? data.code : undefined,
+      cooldownUntil,
+    }
   }
 
   if (error.request) {

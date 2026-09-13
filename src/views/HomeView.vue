@@ -1,107 +1,59 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import BaseButton from '@/components/ui/BaseButton.vue'
-import BaseCard from '@/components/ui/BaseCard.vue'
+import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter()
+const auth = useAuthStore()
 </script>
 
 <template>
   <div class="home">
-    <!-- Hero Section -->
     <section class="hero">
-      <div class="hero-content">
-        <h1 class="hero-title">Kenali Kebutuhan, Temukan Arah.</h1>
-        <p class="hero-desc">
-          Sistem Pendukung Keputusan untuk membantu orang tua menentukan jalur pendidikan
-          yang paling sesuai (Sekolah Inklusi atau SLB) bagi anak berkebutuhan khusus.
-        </p>
-        <div class="hero-actions">
-          <BaseButton size="lg" variant="primary" @click="router.push('/register')">
-            Mulai Sekarang
-          </BaseButton>
-          <BaseButton size="lg" variant="ghost" @click="router.push('/guide')">
-            Pelajari Lebih Lanjut
-          </BaseButton>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h1>Kenali Kebutuhan,<br />Temukan Arah.</h1>
+          <p>LENTERA membantu orang tua mempertimbangkan jalur pendidikan anak melalui asesmen dan rekomendasi sekolah yang diproses oleh sistem.</p>
+          <div class="hero-actions">
+            <RouterLink class="primary-link" :to="auth.isAuthenticated ? '/assessment' : '/register'">
+              {{ auth.isAuthenticated ? 'Mulai asesmen' : 'Mulai menggunakan LENTERA' }}
+            </RouterLink>
+            <RouterLink class="text-link" to="/panduan">Pelajari cara kerja →</RouterLink>
+          </div>
+        </div>
+        <div class="process" aria-label="Alur LENTERA">
+          <div class="process-row"><span>01</span><strong>Isi asesmen</strong><p>Jawab pertanyaan untuk anak Anda.</p></div>
+          <div class="process-row"><span>02</span><strong>Hasil diproses</strong><p>Backend menghitung hasil sesuai metode yang ditetapkan.</p></div>
+          <div class="process-row"><span>03</span><strong>Tinjau rekomendasi</strong><p>Baca penjelasan hasil dan pilihan sekolah yang tersedia.</p></div>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features">
-      <h2 class="features-title">Mengapa Menggunakan LENTERA?</h2>
-      <div class="features-grid">
-        <BaseCard padding="lg" class="feature-card">
-          <div class="feature-icon" aria-hidden="true">🎯</div>
-          <h3 class="feature-heading">Asesmen Terarah</h3>
-          <p class="feature-text">
-            Kumpulan pertanyaan yang dirancang khusus untuk mengidentifikasi kebutuhan spesifik anak.
-          </p>
-        </BaseCard>
-
-        <BaseCard padding="lg" class="feature-card">
-          <div class="feature-icon" aria-hidden="true">📊</div>
-          <h3 class="feature-heading">Hasil Objektif</h3>
-          <p class="feature-text">
-            Sistem menghitung kecenderungan berdasarkan bobot kriteria untuk memberikan rekomendasi yang akurat.
-          </p>
-        </BaseCard>
-
-        <BaseCard padding="lg" class="feature-card">
-          <div class="feature-icon" aria-hidden="true">🏫</div>
-          <h3 class="feature-heading">Rekomendasi Sekolah</h3>
-          <p class="feature-text">
-            Temukan daftar Sekolah Luar Biasa (SLB) maupun Sekolah Inklusi yang terdekat dan sesuai dengan hasil asesmen.
-          </p>
-        </BaseCard>
-      </div>
+    <section class="about">
+      <h2>Apa itu LENTERA?</h2>
+      <p>LENTERA adalah prototipe sistem pendukung keputusan untuk membantu orang tua atau wali membandingkan pilihan Sekolah Luar Biasa dan Sekolah Inklusi. Hasilnya menjadi bahan diskusi lanjutan dengan pihak sekolah dan profesional yang relevan.</p>
+      <p class="notice">LENTERA bukan alat diagnosis dan tidak menggantikan penilaian profesional.</p>
     </section>
   </div>
 </template>
 
 <style scoped>
-.home { display: flex; flex-direction: column; gap: 4rem; padding-bottom: 4rem; }
-
-.hero {
-  padding: 4rem 1rem;
-  background: linear-gradient(135deg, var(--color-primary-light) 0%, #fff 100%);
-  text-align: center;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.hero-content {
-  max-width: 720px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.hero-title {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 800;
-  color: var(--color-text);
-  line-height: 1.2;
-  margin: 0;
-}
-
-.hero-desc {
-  font-size: 1.125rem;
-  color: var(--color-text-2);
-  line-height: 1.6;
-  margin: 0;
-  max-width: 600px;
-}
-
-.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-
-.features { padding: 0 1rem; max-width: 1024px; margin: 0 auto; }
-.features-title { text-align: center; font-size: 1.5rem; font-weight: 700; margin: 0 0 2rem; color: var(--color-text); }
-.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-
-.feature-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-.feature-icon { font-size: 3rem; line-height: 1; }
-.feature-heading { font-size: 1.125rem; font-weight: 700; margin: 0; color: var(--color-text); }
-.feature-text { font-size: 0.9375rem; color: var(--color-muted); line-height: 1.6; margin: 0; }
+.home { padding-bottom: 4rem; }
+.hero { background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+.hero-inner { max-width: 1120px; margin: 0 auto; padding: 4.5rem 1.25rem; display: grid; gap: 3rem; align-items: center; }
+.hero-copy { max-width: 590px; }
+h1 { font-size: clamp(2.25rem, 5vw, 3.75rem); letter-spacing: -0.045em; line-height: 1.08; margin: 0 0 1.5rem; }
+.hero-copy p { font-size: 1.0625rem; color: var(--color-text-2); line-height: 1.7; max-width: 540px; margin-bottom: 2rem; }
+.hero-actions { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+.primary-link { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0.7rem 1rem; color: #fff; background: var(--color-primary); border-radius: var(--radius-sm); font-weight: 650; text-decoration: none; }
+.primary-link:hover { background: var(--color-primary-hover); text-decoration: none; }
+.text-link { font-weight: 600; text-decoration: none; }
+.process { border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+.process-row { display: grid; grid-template-columns: 2.5rem 1fr; column-gap: 0.75rem; padding: 1.25rem; }
+.process-row + .process-row { border-top: 1px solid var(--color-border); }
+.process-row span { grid-row: span 2; color: var(--color-primary); font-weight: 700; }
+.process-row strong { font-size: 1rem; }
+.process-row p { color: var(--color-muted); font-size: 0.875rem; margin: 0.25rem 0 0; }
+.about { max-width: 1120px; margin: 0 auto; padding: 3rem 1.25rem 0; }
+.about h2 { margin: 0 0 1rem; }
+.about p { max-width: 750px; color: var(--color-text-2); line-height: 1.7; }
+.about .notice { border-left: 3px solid var(--color-primary); padding: 0.5rem 0 0.5rem 1rem; font-weight: 600; }
+@media (min-width: 800px) { .hero-inner { grid-template-columns: 1.25fr 0.75fr; } }
 </style>

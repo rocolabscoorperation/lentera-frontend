@@ -11,6 +11,8 @@ export interface ApiError {
   fieldErrors?: Record<string, string>
   /** Application-level error code from the backend (optional) */
   code?: string
+  /** Backend-provided time when another assessment may be started. */
+  cooldownUntil?: string
 }
 
 /** Generic wrapper for successful API responses */

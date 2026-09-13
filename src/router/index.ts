@@ -104,6 +104,13 @@ const router = createRouter({
   },
 })
 
+window.addEventListener('lentera:unauthorized', () => {
+  const current = router.currentRoute.value
+  if (current.meta.requiresAuth) {
+    router.replace({ name: 'login', query: { redirect: current.fullPath } })
+  }
+})
+
 // ── Navigation guard ─────────────────────────────────────────────────────────
 router.beforeEach(async (to) => {
   const auth = useAuthStore()

@@ -8,7 +8,7 @@ import { RouterLink } from 'vue-router'
       <!-- Brand -->
       <div class="auth-brand">
         <RouterLink to="/" class="auth-brand-link">
-          <span class="auth-brand-icon">💡</span>
+          <span class="auth-brand-icon" aria-hidden="true">✳</span>
           <span class="auth-brand-name">LENTERA</span>
         </RouterLink>
         <p class="auth-brand-tagline">Kenali Kebutuhan, Temukan Arah.</p>
@@ -44,7 +44,7 @@ import { RouterLink } from 'vue-router'
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
@@ -52,7 +52,7 @@ import { RouterLink } from 'vue-router'
   padding: 2rem 2rem 1.5rem;
   text-align: center;
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-primary-light);
+  background: var(--color-surface);
 }
 
 .auth-brand-link {

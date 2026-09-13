@@ -22,6 +22,10 @@ function validate(): boolean {
     errors.value.phoneNumber = 'Nomor telepon wajib diisi'
     valid = false
   }
+  else if (!/^\+?[0-9]{8,15}$/.test(form.value.phoneNumber.trim())) {
+    errors.value.phoneNumber = 'Masukkan nomor telepon yang valid'
+    valid = false
+  }
   if (!form.value.password || form.value.password.length < 6) {
     errors.value.password = 'Kata sandi minimal 6 karakter'
     valid = false
@@ -38,10 +42,12 @@ async function handleSubmit() {
   if (!validate()) return
   submitError.value = null
   try {
-    await auth.register({ phoneNumber: form.value.phoneNumber.trim(), password: form.value.password })
-    router.push('/profile')
+    const authenticated = await auth.register({ phoneNumber: form.value.phoneNumber.trim(), password: form.value.password })
+    router.push(authenticated ? '/profile' : '/login?registered=1')
   } catch (e) {
-    submitError.value = (e as ApiError).message ?? 'Gagal mendaftar. Silakan coba lagi.'
+    const error = e as ApiError
+    if (error.fieldErrors?.phoneNumber) errors.value.phoneNumber = error.fieldErrors.phoneNumber
+    submitError.value = error.message ?? 'Gagal mendaftar. Silakan coba lagi.'
   }
 }
 </script>
